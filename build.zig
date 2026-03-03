@@ -155,7 +155,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
     b.installArtifact((xml_lib));
-    xml_lib.installHeader(xml_version_header.getOutput(), "libxml/xmlversion.h");
+    xml_lib.installHeader(xml_version_header.getOutputFile(), "libxml/xmlversion.h");
     xml_lib.installHeadersDirectory(upstream.path("include/libxml"), "libxml", .{});
     xml_lib.root_module.addConfigHeader(config_header);
     xml_lib.root_module.addConfigHeader(xml_version_header);
