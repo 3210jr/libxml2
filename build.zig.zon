@@ -28,6 +28,8 @@
         "build.zig.zon",
         "LICENSE",
         "README.md",
+        "src",
+        "include",
     },
     .fingerprint = 0xf268267b866377a8, // Changing this has security and trust implications.
 }

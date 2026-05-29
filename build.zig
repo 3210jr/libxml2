@@ -227,6 +227,34 @@ pub fn build(b: *std.Build) void {
         }
     }
 
+    const translate_c = b.addTranslateC(.{
+        // libxml2 is modular, and the TranslateC step assumes there is a single
+        // header for everything, so we'll make our own. There is a minimal
+        // libxml.h header, but it just seems to be some common stuff, like the
+        // version of the library.
+        //
+        // The fact that you need to include the right header _and_ set an
+        // *_ENABLED defined is an interesting design decision. libxml2.h
+        // shouldn't collide with any of the other headers, and we retain the
+        // modularity with all the options passed in as macros.
+        .root_source_file = b.path("include/libxml2.h"),
+        .target = target,
+        .optimize = optimize,
+    });
+    translate_c.addIncludePath(upstream.path("include"));
+    translate_c.addConfigHeader(xml_version_header);
+    translate_c.addConfigHeader(config_header);
+
+    const xml_module = b.addModule("xml", .{
+        .root_source_file = b.path("src/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "c", .module = translate_c.createModule() },
+        },
+    });
+    xml_module.linkLibrary(xml_lib);
+
     const xmllint = b.addExecutable(.{
         .name = "xmllint",
         .root_module = b.createModule(.{
