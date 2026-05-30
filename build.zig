@@ -19,7 +19,6 @@ pub fn build(b: *std.Build) void {
     // Most of these config options have not been tested.
 
     const minimum = b.option(bool, "minimum", "build a minimally sized library (default=false)") orelse false;
-    const legacy = b.option(bool, "legacy", "maximum ABI compatibility (default=false)") orelse false;
 
     const http = b.option(bool, "http", "ABI compatibility for removed HTTP support (default=false)") orelse false;
     const icu = b.option(bool, "icu", "ICU support (default=false)") orelse false;
@@ -38,7 +37,7 @@ pub fn build(b: *std.Build) void {
     const valid = b.option(bool, "valid", "DTD validation support (default=true)") orelse !minimum;
     const xinclude = b.option(bool, "xinclude", "XInclude 1.0 support (default=true)") orelse !minimum;
 
-    const zlib = b.option(bool, "zlib", "use libz in DIR") orelse legacy;
+    const zlib = b.option(bool, "zlib", "use libz in DIR") orelse false;
 
     const want_c14n = b.option(bool, "c14n", "Canonical XML 1.0 support (default=true)");
     const want_history = b.option(bool, "history", "history support for xmllint shell (default=false)");
@@ -102,7 +101,6 @@ pub fn build(b: *std.Build) void {
         .WITH_HTTP = http,
         .WITH_VALID = valid,
         .WITH_HTML = html,
-        .WITH_LEGACY = legacy,
         .WITH_C14N = c14n,
         .WITH_CATALOG = catalog,
         .WITH_XPATH = xpath,
