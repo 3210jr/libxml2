@@ -1,4 +1,5 @@
 const std = @import("std");
+const Translator = @import("translate_c").Translator;
 
 pub const IconvImpl = enum { libc, libiconv, win_iconv };
 
@@ -6,6 +7,8 @@ pub fn build(b: *std.Build) void {
     const upstream = b.dependency("libxml2", .{});
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+
+    const translate_c = b.dependency("translate_c", .{});
 
     // get version from zon file
     const versionString = @import("./build.zig.zon").version;
@@ -225,7 +228,7 @@ pub fn build(b: *std.Build) void {
         }
     }
 
-    const translate_c = b.addTranslateC(.{
+    const t: Translator = .init(translate_c, .{
         // libxml2 is modular, and the TranslateC step assumes there is a single
         // header for everything, so we'll make our own. There is a minimal
         // libxml.h header, but it just seems to be some common stuff, like the
@@ -235,20 +238,20 @@ pub fn build(b: *std.Build) void {
         // *_ENABLED defined is an interesting design decision. libxml2.h
         // shouldn't collide with any of the other headers, and we retain the
         // modularity with all the options passed in as macros.
-        .root_source_file = b.path("include/libxml2.h"),
+        .c_source_file = b.path("include/libxml2.h"),
         .target = target,
         .optimize = optimize,
     });
-    translate_c.addIncludePath(upstream.path("include"));
-    translate_c.addConfigHeader(xml_version_header);
-    translate_c.addConfigHeader(config_header);
+    t.addIncludePath(upstream.path("include"));
+    t.addConfigHeader(xml_version_header);
+    t.addConfigHeader(config_header);
 
     const xml_module = b.addModule("xml", .{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
-            .{ .name = "c", .module = translate_c.createModule() },
+            .{ .name = "c", .module = t.mod },
         },
     });
     xml_module.linkLibrary(xml_lib);
